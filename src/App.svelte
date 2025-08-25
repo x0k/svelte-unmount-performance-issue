@@ -21,9 +21,14 @@
   };
 
   let schema = $state.raw({
-    type: "array",
-    items: {
-      type: "string",
+    type: "object",
+    properties: {
+      foo: {
+        type: "array",
+        items: {
+          type: "string",
+        },
+      },
     },
   });
 
@@ -48,7 +53,7 @@
     },
     resolver: () => resolver,
     theme,
-    initialValue: array(1000, () => crypto.randomUUID()),
+    initialValue: { foo: array(400, () => crypto.randomUUID()) },
     translation: identity,
     createValidator: () => validator,
     createMerger: () => merger,
