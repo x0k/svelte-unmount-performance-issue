@@ -4,14 +4,15 @@
     setFormContext2,
     FORM_CONTEXT,
     type Config,
-    type FormMerger,
   } from "./form";
   import * as components from "./components/exports";
   import * as fields from "./fields/exports";
   import * as templates from "./templates/exports";
   import * as widgets from "./widgets/exports";
-  import { array } from "./lib/array";
   import { identity, noop } from "./lib/function";
+  import { bigSchema, initialValue } from "./schema";
+  import { getSimpleSchemaType, isFixedItems } from "./core";
+  import { createFormMerger } from "./mergers/modern";
 
   const themeComponents = {
     ...components,
@@ -20,29 +21,24 @@
     ...widgets,
   };
 
-  let schema = $state.raw({
-    type: "object",
-    properties: {
-      foo: {
-        type: "array",
-        items: {
-          type: "string",
-        },
-      },
-    },
-  });
+  let schema = $state.raw(bigSchema);
 
-  const resolver = ({ schema }: Config) =>
-    schema.type === "array" ? "arrayField" : `${schema.type ?? "null"}Field`;
+  const resolver = ({ schema }: Config) => {
+    if (schema.oneOf !== undefined) {
+      return "oneOfField";
+    }
+    if (schema.anyOf !== undefined) {
+      return "anyOfField";
+    }
+    const type = getSimpleSchemaType(schema);
+    if (type === "array") {
+      return isFixedItems(schema) ? "tupleField" : "arrayField";
+    }
+    return `${type}Field`;
+  };
 
   const validator = {
     isValid: () => true,
-  };
-
-  const merger: FormMerger = {
-    mergeAllOf: identity,
-    mergeSchemas: identity,
-    mergeFormDataAndSchemaDefaults: identity,
   };
 
   const theme = (type) => themeComponents[type];
@@ -51,12 +47,12 @@
     get schema() {
       return schema;
     },
+    initialValue,
     resolver: () => resolver,
     theme,
-    initialValue: { foo: array(400, () => crypto.randomUUID()) },
     translation: identity,
     createValidator: () => validator,
-    createMerger: () => merger,
+    createMerger: createFormMerger,
   });
   setFormContext2(form);
   const ctx = form[FORM_CONTEXT];

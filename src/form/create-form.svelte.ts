@@ -608,7 +608,6 @@ export function createForm<T, V extends Validator>(
       valueRef.current,
       options.schema
     );
-    console.log(nextValue)
     const change = reconcileSchemaValues(valueRef.current, nextValue);
     if (change !== UNCHANGED) {
       valueRef.current = change;

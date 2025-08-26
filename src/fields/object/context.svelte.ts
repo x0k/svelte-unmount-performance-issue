@@ -79,13 +79,19 @@ export function createObjectContext<V extends Validator>(
     retrieveSchema(ctx, config().schema, value())
   );
 
-  let lastSchemaProperties: Schema["properties"] = undefined;
+  // ORIGINAL CODE
+  // let lastSchemaProperties: Schema["properties"] = undefined;
+  // const schemaProperties = $derived.by(() => {
+  //   if (!isSchemaDeepEqual(lastSchemaProperties, retrievedSchema.properties)) {
+  //     lastSchemaProperties = $state.snapshot(retrievedSchema.properties);
+  //   }
+  //   return lastSchemaProperties;
+  // });
+
   const schemaProperties = $derived.by(() => {
-    if (!isSchemaDeepEqual(lastSchemaProperties, retrievedSchema.properties)) {
-      lastSchemaProperties = $state.snapshot(retrievedSchema.properties);
-    }
-    return lastSchemaProperties;
-  });
+    $state.snapshot(retrievedSchema.properties)
+    return $state.snapshot(retrievedSchema.properties)
+  })
 
   // NOTE: `defaults` population
   $effect(() => {
